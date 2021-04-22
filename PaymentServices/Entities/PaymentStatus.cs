@@ -15,7 +15,7 @@ namespace PaymentServices.Entities
         public int LogId { get; set; }
 
         [Column]
-        public PaymentRequest CreditCardNo { get; set; }
+        public PaymentRequest RequestLogId { get; set; }
 
         [Column]
         [Required]

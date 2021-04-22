@@ -11,8 +11,11 @@ namespace PaymentServices.Entities
     {
         [Column]
         [Required]
-        [CreditCard]
         [Key]
+        public int RequestLogId { get; set; }
+        [Column]
+        [Required]
+        [CreditCard]
         public string CreditCardNumber { get; set; }
         [Column]
         [Required]

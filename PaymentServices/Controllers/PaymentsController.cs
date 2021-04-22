@@ -16,6 +16,7 @@ namespace PaymentServices.Controllers
     {
         private PaymentContext _paymentContext;
         private IPaymentGatewaySelector _paymentGatewaySelector;
+
         public PaymentsController(PaymentContext paymentContext,
             IPaymentGatewaySelector paymentGatewaySelector)
         {
@@ -24,15 +25,36 @@ namespace PaymentServices.Controllers
         }
         [Route("api/[controller]")]
         [HttpPost]
-        public async Task<JsonResult> ProcessPaymentAsync([FromBody] PaymentRequest payment)
+        public async Task<PaymentStatus> ProcessPaymentAsync([FromBody] PaymentRequest payment)
         {
             
             if (await _paymentGatewaySelector.PaymentGatewaySelectorLAsync(payment))
             {
                 Response.StatusCode = StatusCodes.Status200OK;
-                return new JsonResult("Payment is Processed");
+                _paymentContext.PaymentStatus.Add(new PaymentStatus()
+                {
+                    PaymentState = "Completed",
+                    RequestLogId = payment
+                });
+                await _paymentContext.SaveChangesAsync();
+                return new PaymentStatus()
+                {
+                    PaymentState = "Completed",
+                    RequestLogId = payment
+                };
             }
-            return new JsonResult("Payment Failed");
+            _paymentContext.PaymentStatus.Add(new PaymentStatus()
+            {
+                PaymentState = "Failed",
+                RequestLogId = payment
+            });
+            await _paymentContext.SaveChangesAsync();
+
+            return new PaymentStatus()
+            {
+                PaymentState = "Failed",
+                RequestLogId = payment
+            };
         }
     }
 }
