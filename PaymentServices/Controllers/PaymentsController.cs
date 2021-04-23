@@ -7,54 +7,58 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using PaymentServices.Entities;
 using PaymentServices.Services;
+using System.Net;
 
 namespace PaymentServices.Controllers
 {
-    
     [ApiController]
     public class PaymentsController : ControllerBase
     {
         private PaymentContext _paymentContext;
         private IPaymentGatewaySelector _paymentGatewaySelector;
+        private IPaymentUpdater _paymentUpdater;
 
         public PaymentsController(PaymentContext paymentContext,
-            IPaymentGatewaySelector paymentGatewaySelector)
+            IPaymentGatewaySelector paymentGatewaySelector, IPaymentUpdater paymentUpdater)
         {
             _paymentGatewaySelector = paymentGatewaySelector;
             _paymentContext = paymentContext;
+            _paymentUpdater = paymentUpdater;
         }
         [Route("api/[controller]")]
         [HttpPost]
         public async Task<PaymentStatus> ProcessPaymentAsync([FromBody] PaymentRequest payment)
         {
-            
-            if (await _paymentGatewaySelector.PaymentGatewaySelectorLAsync(payment))
+            try
             {
-                Response.StatusCode = StatusCodes.Status200OK;
-                _paymentContext.PaymentStatus.Add(new PaymentStatus()
+                if (await _paymentGatewaySelector.PaymentGatewaySelectorLAsync(payment))
                 {
-                    PaymentState = "Completed",
-                    RequestLogId = payment
-                });
-                await _paymentContext.SaveChangesAsync();
-                return new PaymentStatus()
+                    Response.StatusCode = StatusCodes.Status200OK;
+                    await _paymentUpdater.UpdatePayment(payment, "Completed");
+                    return new PaymentStatus()
+                    {
+                        PaymentState = "Completed",
+                        RequestLogId = payment
+                    };
+                }
+                else
                 {
-                    PaymentState = "Completed",
-                    RequestLogId = payment
-                };
+                    await _paymentUpdater.UpdatePayment(payment, "Failed");
+                    return new PaymentStatus()
+                    {
+                        PaymentState = "Failed",
+                        RequestLogId = payment
+                    };
+                }
             }
-            _paymentContext.PaymentStatus.Add(new PaymentStatus()
+            catch (Exception e)
             {
-                PaymentState = "Failed",
-                RequestLogId = payment
-            });
-            await _paymentContext.SaveChangesAsync();
+                Response.StatusCode = StatusCodes.Status500InternalServerError;
+                Console.WriteLine(e.Message);
+                return null;
+            }
 
-            return new PaymentStatus()
-            {
-                PaymentState = "Failed",
-                RequestLogId = payment
-            };
+
         }
     }
 }

@@ -16,6 +16,7 @@ namespace PaymentServices.Entities
         [Column]
         [Required]
         [CreditCard]
+        [MinLength(16, ErrorMessage = "Credit card number should be minimum 16 digits long")]
         public string CreditCardNumber { get; set; }
         [Column]
         [Required]
@@ -27,6 +28,7 @@ namespace PaymentServices.Entities
         public DateTime ExpirationDate { get; set; }
         [Column]
         [MinLength(3, ErrorMessage = "Security code should be minimum 3 digits long")]
+        [MaxLength(3, ErrorMessage = "Security code should be maximum 3 digits long")]
         public string SecurityCode { get; set; }
         [Column]
         [Required]

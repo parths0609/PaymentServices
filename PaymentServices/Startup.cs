@@ -39,6 +39,8 @@ namespace PaymentServices
 
             services.AddScoped<IExpensivePaymentGateway, ExpensivePaymentGateway>();
 
+            services.AddScoped<IPaymentUpdater, PaymentUpdater>();
+
 
             services.AddDbContext<PaymentContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("PaymentDB")));
