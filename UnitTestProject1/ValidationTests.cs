@@ -15,7 +15,7 @@ namespace UnitTestsPayments
             {
                 CreditCardNumber = "4929 9033 9428 8323",
                 CardHolder = "Sam Brown",
-                ExpirationDate = new System.DateTime(2023, 12, 24),
+                ExpirationDate = new System.DateTime(2019, 12, 24),
                 SecurityCode = "344",
                 Amount = 546
             };
